@@ -1,0 +1,9 @@
+robolab:
+  hosts:
+    192.168.56.101: #IP адрес сервера
+  vars:
+    ansible_user: 'mitia' #имя пользователя, для Ubuntu это не привилегированный пользователь который может делать sudo
+    ansible_python_interpreter: '/usr/bin/python3'
+    ansible_port: '22'
+    venv_dir: '/root/.venv'
+    manage_dir: '/root/manage'

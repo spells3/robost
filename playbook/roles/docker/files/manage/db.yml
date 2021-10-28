@@ -1,0 +1,67 @@
+- name: 'DB management'
+  hosts: localhost
+  connection: local
+  vars_files:
+    - '{{ playbook_dir }}/db_config.yml'
+    - '{{ playbook_dir }}/general_config.yml'
+  tasks:
+    - name: Check/create network
+      docker_network:
+        name: '{{ network_name }}'
+      tags:
+        - never
+        - start
+
+    - name: volume for pgsql
+      docker_volume:
+        name: 'pgsql'
+      tags:
+        - never
+        - start
+
+    - name: start PostgeSQL
+      docker_container:
+        name: '{{ db_host }}'
+        image: 'postgres:13-alpine'
+        container_default_behavior: no_defaults
+        purge_networks: yes
+        network_mode: default
+        networks:
+          - name: '{{ network_name }}'
+        volumes:
+          - 'pgsql:/var/lib/postgresql/data/'
+        env:
+          POSTGRES_USER: '{{ db_user }}'
+          POSTGRES_PASSWORD: '{{ db_password }}'
+          POSTGRES_DB: '{{ db_name }}'
+        ports:
+          - '127.0.0.1:5432:5432/tcp'
+        restart_policy: always
+        state: started
+      tags:
+        - never
+        - start
+
+    - name: Create DB
+      community.postgresql.postgresql_db:
+        name: '{{ django_db_name }}'
+        login_host: '127.0.0.1'
+        login_password: '{{ db_password }}'
+        login_user: '{{ db_user }}'
+        maintenance_db: '{{ db_name }}'
+      tags:
+        - never
+        - create
+
+    - name: Create User
+      community.postgresql.postgresql_user:
+        name: '{{ django_db_user }}'
+        password: '{{ django_db_pass }}'
+        priv: 'ALL'
+        login_host: '127.0.0.1'
+        login_password: '{{ db_password }}'
+        login_user: '{{ db_user }}'
+        db: '{{ django_db_name }}'
+      tags:
+        - never
+        - create

@@ -1,0 +1,44 @@
+- name: 'Project management'
+  hosts: localhost
+  connection: local
+  vars_files:
+    - '{{ playbook_dir }}/general_config.yml'
+  tasks:
+    - name: Check/create user
+      user:
+        name: 'tank'
+        comment: 'user for containers'
+        shell: '/usr/sbin/nologin'
+        uid: 1500
+        home: '/www'
+
+    - name: check directory for assemble project
+      file:
+        name: '/root/{{ proj_name }}'
+        state: directory
+      register: proj_exists
+
+    - block:
+        - name: copy container skeleton
+          copy:
+            src: '{{ playbook_dir }}/img'
+            dest: '/root/{{ proj_name }}'
+
+        - name: Entrypoint exec bit
+          file:
+            name: '/root/{{ proj_name }}/img/entrypoint.sh'
+            mode: 0755
+            owner: 'root'
+            group: 'root'
+
+        - name: create empty dir for django
+          file:
+            name: '/root/{{ proj_name }}/img/django'
+            state: directory
+
+        - name: crate project yml
+          template:
+            src: '{{ playbook_dir }}/project.yml.j2'
+            dest: '/root/{{ proj_name }}/project.yml'
+
+      when: proj_exists.changed

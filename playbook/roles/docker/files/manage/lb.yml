@@ -1,0 +1,27 @@
+- name: 'Traefik management'
+  hosts: localhost
+  connection: local
+  vars_files:
+    - '{{ playbook_dir }}/general_config.yml'
+  tasks:
+    - name: Check/create network
+      docker_network:
+        name: '{{ network_name }}'
+
+    - name: start Traefik
+      docker_container:
+        name: 'lb'
+        image: 'traefik:v2.5.3'
+        container_default_behavior: no_defaults
+        purge_networks: yes
+        network_mode: default
+        networks:
+          - name: '{{ network_name }}'
+        volumes:
+          - '/var/run/docker.sock:/var/run/docker.sock'
+          - '{{ playbook_dir }}/traefik.yml:/etc/traefik/traefik.yml'
+        ports:
+          - '80:80'
+          - '443:443'
+        restart_policy: always
+        state: started

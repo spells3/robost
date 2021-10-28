@@ -1,0 +1,5 @@
+db_host: 'db'
+db_port: 5432
+db_user: 'postgres_user'
+db_password: 'postgres_password'
+db_name: 'djangodb'

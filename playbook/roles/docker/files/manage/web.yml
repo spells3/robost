@@ -1,0 +1,112 @@
+- name: 'Project management'
+  hosts: localhost
+  connection: local
+  vars_files:
+    - '{{ playbook_dir }}/general_config.yml'
+  tasks:
+    - name: Check/create directory for web application
+      file:
+        name: '/www/{{ proj_name }}'
+        group: 'tank'
+        owner: 'tank'
+        state: directory
+        mode: 0700
+
+    - name: Check/copy nginx.conf for web application
+      template:
+        src: '{{ playbook_dir }}/default.conf.j2'
+        dest: '/www/{{ proj_name }}/default.conf'
+        group: 'tank'
+        owner: 'tank'
+        mode: 0600
+
+    - name: Check static directory for web application
+      file:
+        name: '/www/{{ proj_name }}/static'
+        owner: 'tank'
+        group: 'tank'
+        state: directory
+        mode: 0700
+
+    - name: Check static directory in project
+      stat:
+        name: '/root/{{ proj_name }}/img/django/static'
+      register: static_exists
+
+    - block:
+        - name: Copy static files
+          ansible.posix.synchronize:
+            src: '/root/{{ proj_name }}/img/django/static/'
+            dest: '/www/{{ proj_name }}/static'
+          delegate_to: localhost
+
+        - name: change ownership
+          file:
+            name: '/www/{{ proj_name }}/static'
+            recurse: yes
+            owner: 'tank'
+            group: 'tank'
+      when: static_exists.stat.exists
+
+    - name: check container image
+      docker_image:
+        name: '{{ proj_name }}'
+        source: local
+        tag: '{{ img_tag }}'
+      register: container_image
+      ignore_errors: yes
+
+    - name: build container image
+      docker_image:
+        name: '{{ proj_name }}'
+        build:
+          path: '/root/{{ proj_name }}/img'
+        source: build
+        tag: '{{ img_tag }}'
+      when: container_image.failed
+
+    - name: Start nginx
+      docker_container:
+        name: '{{ proj_name }}_ngx'
+        image: 'nginx:1.20-alpine'
+        container_default_behavior: no_defaults
+        purge_networks: yes
+        network_mode: default
+        networks:
+          - name: '{{ network_name }}'
+        volumes:
+          - '/www/{{ proj_name }}/static:/app/static'
+          - '/www/{{ proj_name }}/default.conf:/etc/nginx/conf.d/default.conf'
+        labels: '{{ ngx_labels }}'
+        restart_policy: always
+        state: started
+
+    - name: Start Django container
+      docker_container:
+        name: '{{ proj_name }}_app'
+        image: '{{ proj_name }}:{{ img_tag }}'
+        user: 'tank'
+        container_default_behavior: no_defaults
+        purge_networks: yes
+        network_mode: default
+        networks:
+          - name: '{{ network_name }}'
+        exposed_ports:
+          - 8088
+        volumes:
+          - '/www/{{ proj_name }}/static:/app/static'
+        env:
+          DJANGO_ENV: '{{ django_env }}'
+          DEBUG: '{{ django_debug }}'
+          SECRET_KEY: '{{ django_secret }}'
+          DJANGO_ALLOWED_HOSTS: '{{ django_allowed_host }}'
+          DATABASE: '{{ django_db }}'
+          DB_ENGINE: '{{ django_db_engine }}'
+          DB_HOST: '{{ django_db_host }}'
+          DB_PORT: '{{ django_db_port }}'
+          POSTGRES_DB: '{{ django_db_name }}'
+          POSTGRES_USER: '{{ django_db_user }}'
+          POSTGRES_PASSWORD: '{{ django_db_pass }}'
+        command: 'gunicorn {{ proj_name }}.wsgi:application --bind 0.0.0.0:8088 --reload'
+        restart_policy: always
+        state: started
