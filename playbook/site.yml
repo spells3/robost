@@ -1,6 +1,6 @@
 - hosts: robolab
   name: Deploy needeed packages
-  become: false
+  become: '{{ use_nonpriviledged_user }}'
   gather_facts: false
   roles:
     - docker
