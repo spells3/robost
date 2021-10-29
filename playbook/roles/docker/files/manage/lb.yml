@@ -8,6 +8,13 @@
       docker_network:
         name: '{{ network_name }}'
 
+    - name: ACME file mode
+      file:
+        name: '{{ playbook_dir }}/acme.json'
+        owner: 'root'
+        group: 'root'
+        mode: 0600
+
     - name: start Traefik
       docker_container:
         name: 'lb'
@@ -20,6 +27,7 @@
         volumes:
           - '/var/run/docker.sock:/var/run/docker.sock'
           - '{{ playbook_dir }}/traefik.yml:/etc/traefik/traefik.yml'
+          - '{{ playbook_dir }}/acme.json:/acme.json'
         ports:
           - '80:80'
           - '443:443'

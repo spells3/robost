@@ -1,96 +1,96 @@
 ---
-# - name: Update the apt package index
-#   apt:
-#     name: '*'
-#     state: latest
-#     update_cache: yes
-#     force_apt_get: yes
+- name: Update the apt package index
+  apt:
+    name: '*'
+    state: latest
+    update_cache: yes
+    force_apt_get: yes
 
-# - name: Install packages for apt add repository over HTTPS
-#   apt:
-#     name: '{{ packagesdep }}'
-#     force_apt_get: yes
-#     state: latest
-#     update_cache: yes
-#   vars:
-#     packagesdep:
-#       - git
-#       - apt-transport-https
-#       - ca-certificates
-#       - wget
-#       - software-properties-common
-#       - gnupg2
-#       - curl
-#       - unzip
-#       - mc
-#       - python3-pip
-#       - python3-venv
+- name: Install packages for apt add repository over HTTPS
+  apt:
+    name: '{{ packagesdep }}'
+    force_apt_get: yes
+    state: latest
+    update_cache: yes
+  vars:
+    packagesdep:
+      - git
+      - apt-transport-https
+      - ca-certificates
+      - wget
+      - software-properties-common
+      - gnupg2
+      - curl
+      - unzip
+      - mc
+      - python3-pip
+      - python3-venv
 
-# - name: Add Apt signing key from official docker repo
-#   apt_key:
-#     url: https://download.docker.com/linux/debian/gpg
-#     state: present
+- name: Add Apt signing key from official docker repo
+  apt_key:
+    url: https://download.docker.com/linux/debian/gpg
+    state: present
 
-# - name: add docker official repository for Ubuntu
-#   apt_repository:
-#     repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
-#     state: present
+- name: add docker official repository for Ubuntu
+  apt_repository:
+    repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable
+    state: present
 
-# - name: Index new repo into the cache
-#   apt:
-#     name: '*'
-#     state: latest
-#     update_cache: yes
-#     force_apt_get: yes
+- name: Index new repo into the cache
+  apt:
+    name: '*'
+    state: latest
+    update_cache: yes
+    force_apt_get: yes
 
-# - name: Update packages
-#   apt:
-#     upgrade: dist
+- name: Update packages
+  apt:
+    upgrade: dist
 
-# - name: actually install docker
-#   apt:
-#     name: 'docker-ce'
-#     state: latest
+- name: actually install docker
+  apt:
+    name: 'docker-ce'
+    state: latest
 
-# - name: 'Create config derectory'
-#   file:
-#     path: /etc/docker
-#     state: directory
-#     mode: 0700
-#     owner: root
-#     group: root
+- name: 'Create config derectory'
+  file:
+    path: /etc/docker
+    state: directory
+    mode: 0700
+    owner: root
+    group: root
 
-# - name: 'Configure repository'
-#   copy:
-#     src: daemon.json
-#     dest: /etc/docker/daemon.json
-#     owner: root
-#     group: root
-#     mode: 0640
-#     backup: yes
+- name: 'Configure repository'
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0640
+    backup: yes
 
-# - name: Starting Docker
-#   service:
-#     name: docker
-#     state: started
-#     enabled: true
+- name: Starting Docker
+  service:
+    name: docker
+    state: started
+    enabled: true
 
-# - name: Install docker for ansible
-#   shell: 'pip3 install docker'
+- name: Install docker for ansible
+  shell: 'pip3 install docker'
 
-# - name: Copy requirements.txt for venv
-#   copy:
-#     src: 'requirements.txt'
-#     dest: '/root/requirements.txt'
-#     owner: root
-#     group: root
-#     mode: 0600
+- name: Copy requirements.txt for venv
+  copy:
+    src: 'requirements.txt'
+    dest: '/root/requirements.txt'
+    owner: root
+    group: root
+    mode: 0600
 
-# - name: Virtual Env
-#   pip:
-#     requirements: /root/requirements.txt
-#     virtualenv: '{{ venv_dir }}'
-#     virtualenv_command: /usr/bin/python3 -m venv
+- name: Virtual Env
+  pip:
+    requirements: /root/requirements.txt
+    virtualenv: '{{ venv_dir }}'
+    virtualenv_command: /usr/bin/python3 -m venv
 
 - name: Manage playbook
   copy:

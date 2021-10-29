@@ -4,6 +4,6 @@ robolab:
   vars:
     ansible_user: 'mitia' #имя пользователя, для Ubuntu это не привилегированный пользователь который может делать sudo
     ansible_python_interpreter: '/usr/bin/python3'
-    ansible_port: '22'
-    venv_dir: '/root/.venv'
-    manage_dir: '/root/manage'
+    ansible_port: '22' # Порт для ssh соединения
+    venv_dir: '/root/.venv' # константа
+    manage_dir: '/root/manage' # константа

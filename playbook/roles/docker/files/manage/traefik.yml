@@ -5,7 +5,18 @@ providers:
 entrypoints:
   web:
     address: :80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+  websecure:
+    address: :443
 
-api:
-  dashboard: true
-  insecure: true
+certificatesResolvers:
+  leresolver:
+    acme:
+      email: supp@atservers.net
+      storage: acme.json
+      httpChallenge:
+        entryPoint: web
