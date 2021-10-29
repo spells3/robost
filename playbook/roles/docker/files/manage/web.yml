@@ -10,7 +10,7 @@
         group: 'tank'
         owner: 'tank'
         state: directory
-        mode: 0700
+        mode: 0755
 
     - name: Check/copy nginx.conf for web application
       template:
@@ -26,7 +26,7 @@
         owner: 'tank'
         group: 'tank'
         state: directory
-        mode: 0700
+        mode: 0755
 
     - name: Check static directory in project
       stat:
