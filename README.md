@@ -8,7 +8,7 @@
 
 1. Склонировать репозиторий и войти в него `cd robost`
 2. Создать виртуальное окружение `python -m venv .venv`
-3. Установить зависимости `. .venv/bin/pip install -r playbook/requirements.txt`
+3. Установить зависимости `.venv/bin/pip install -r playbook/requirements.txt`
 4. Перейти в каталог `playbook`
 5. Активировать `. ../.venv/bin/activate`
 6. Скопировать файл `hosts.example.yml` в файл `hosts.yml`. В файле `hosts.yml` подставить данные согласно комментариям: Имя пользователя, hostname/IPaddress
@@ -28,7 +28,7 @@
 
 Настройка подразумевает, что проект будет иметь тоже название, что и каталог с файлом wsgi.py  
 Обязательное требование: наличие в зависимостях `gunicorn==20.1.0` и настройка проекта с env_settings.py из репозитория `robodc`
-Пример строится на проекте payments и домена suoper-domain.com
+Пример строится на проекте payments и домена super-domain.com
 
 1. Создаём каталог проекта командой `/root/.venv/bin/ansible-playbook /root/manage/proj.yml -e 'proj_name=payments domain=super-domain.com'`  
    Произойдёт создание каталога payments, в каталог скопируются файл настройки для проекта, структура для создания образа контейнеров, переменная proj_name соответствует имени проекта, переменная domain соответсвует имени домена, на котором будет работать проект.
@@ -46,7 +46,10 @@
 остановка проекта: `docker stop payments_ngx payments_app`  
 удаление проекта: `docker rm payments_ngx payments_app`  
 остановка и удаление `docker rm -f payments_ngx payments_app`
-удаление образа проекта `docker image rm payments:latest; docker image prune -f` может быть выполнено после удаления контейнеров
+удаление образа проекта `docker image rm payments:latest; docker image prune -f` может быть выполнено после удаления контейнеров  
+`/root/.venv/bin/ansible-playbook /root/manage/db.yml -e @project.yml -e 'dump_name=payment' --tags dump` создание файла дампа БД с именем payment.sql в каталоге проекта. Передаётся ТОЛЬКО имя файла, расширение добавляется автоматически.  
+`/root/.venv/bin/ansible-playbook /root/manage/db.yml -e @project.yml -e 'dump_name=payment' --tags restore` восстановление БД из файлас именем payement.sql из каталога проекта. Передаётся ТОЛЬКО имя файла, расширение добавляется автоматически. Контейнер приложения должен быть остановлен.  
+`/root/.venv/bin/ansible-playbook /root/manage/db.yml -e @project.yml --tags delete` удаление БД и пользователя проекта с сервера БД.
 
 ## Архитектура
 

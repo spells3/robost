@@ -65,3 +65,90 @@
       tags:
         - never
         - create
+
+    - name: Delete User
+      community.postgresql.postgresql_user:
+        name: '{{ django_db_user }}'
+        priv: 'ALL'
+        state: absent
+        db: '{{ django_db_name }}'
+        login_host: '127.0.0.1'
+        login_password: '{{ db_password }}'
+        login_user: '{{ db_user }}'
+        fail_on_user: no
+      tags:
+        - never
+        - delete
+
+    - name: Delete DB
+      community.postgresql.postgresql_db:
+        name: '{{ django_db_name }}'
+        state: absent
+        login_host: '127.0.0.1'
+        login_password: '{{ db_password }}'
+        login_user: '{{ db_user }}'
+        maintenance_db: '{{ db_name }}'
+      tags:
+        - never
+        - delete
+
+    - name: Check dumpfile
+      file:
+        path: '{{ ansible_facts.user_dir }}/{{ proj_name }}/{{ dump_name }}.sql'
+        mode: 0666
+        state: touch
+      tags:
+        - never
+        - dump
+
+    - name: Dump DB
+      docker_container:
+        name: 'db_backup'
+        image: 'postgres:13-alpine'
+        container_default_behavior: no_defaults
+        purge_networks: yes
+        network_mode: default
+        networks:
+          - name: '{{ network_name }}'
+        volumes:
+          - '{{ ansible_facts.user_dir }}/{{ proj_name }}/{{ dump_name }}.sql:/{{ dump_name }}.sql'
+        command: '/usr/local/bin/pg_dump --dbname=postgresql://{{ db_user }}:{{ db_password }}@{{ db_host }}:{{ db_port }}/{{ django_db_name }} --file=/{{ dump_name }}.sql'
+        restart_policy: no
+        state: started
+        cleanup: yes
+        detach: no
+        keep_volumes: no
+      tags:
+        - never
+        - dump
+
+    - name: Check dumpfile
+      stat:
+        path: '{{ ansible_facts.user_dir }}/{{ proj_name }}/{{ dump_name }}.sql'
+      register: dump_exists
+      ignore_errors: yes
+      tags:
+        - never
+        - restore
+
+    - name: restore DB
+      docker_container:
+        name: 'db_backup'
+        image: 'postgres:13-alpine'
+        container_default_behavior: no_defaults
+        purge_networks: yes
+        network_mode: default
+        networks:
+          - name: '{{ network_name }}'
+        volumes:
+          - '{{ ansible_facts.user_dir }}/{{ proj_name }}/{{ dump_name }}.sql:/{{ dump_name }}.sql'
+        command: '/usr/local/bin/psql --dbname=postgresql://{{ db_user }}:{{ db_password }}@{{ db_host }}:{{ db_port }}/{{ django_db_name }} --file=/{{ dump_name }}.sql'
+        restart_policy: no
+        state: started
+        cleanup: yes
+        detach: no
+        keep_volumes: no
+      when: dump_exists.stat.exists
+      tags:
+        - never
+        - restore
