@@ -112,7 +112,7 @@
           - name: '{{ network_name }}'
         volumes:
           - '{{ ansible_facts.user_dir }}/{{ proj_name }}/{{ dump_name }}.sql:/{{ dump_name }}.sql'
-        command: '/usr/local/bin/pg_dump --dbname=postgresql://{{ db_user }}:{{ db_password }}@{{ db_host }}:{{ db_port }}/{{ django_db_name }} -O --file=/{{ dump_name }}.sql'
+        command: '/usr/local/bin/pg_dump --dbname=postgresql://{{ django_db_user }}:{{ django_db_pass }}@{{ db_host }}:{{ db_port }}/{{ django_db_name }} -O --file=/{{ dump_name }}.sql'
         restart_policy: no
         state: started
         cleanup: yes
@@ -142,7 +142,7 @@
           - name: '{{ network_name }}'
         volumes:
           - '{{ ansible_facts.user_dir }}/{{ proj_name }}/{{ dump_name }}.sql:/{{ dump_name }}.sql'
-        command: '/usr/local/bin/psql --dbname=postgresql://{{ db_user }}:{{ db_password }}@{{ db_host }}:{{ db_port }}/{{ django_db_name }} --file=/{{ dump_name }}.sql'
+        command: '/usr/local/bin/psql --dbname=postgresql://{{ django_db_user }}:{{ django_db_pass }}@{{ db_host }}:{{ db_port }}/{{ django_db_name }} --file=/{{ dump_name }}.sql'
         restart_policy: no
         state: started
         cleanup: yes
